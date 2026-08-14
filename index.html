@@ -2,22 +2,25 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Para você 💖</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400&family=Playfair+Display:ital,wght@0,400;1,400&display=swap');
 
         :root {
             --bg-gradient: linear-gradient(135deg, #fdf4f6 0%, #f9e4e8 100%);
-            --text-primary: #5c3a41; /* Um tom de vinho escuro/marrom muito elegante */
-            --text-secondary: #c07c88; /* Rosa antigo escuro */
-            --heart-color: #f7c8d0; /* Rosa suave para os corações de fundo */
+            --env-dark: #d89ba6;
+            --env-flap: #e8aeb8;
+            --env-front: #f3bac4;
+            --text-primary: #5c3a41;
+            --text-secondary: #c07c88;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; /* Remove aquele brilho azul ao tocar no celular */
         }
 
         body {
@@ -27,141 +30,270 @@
             justify-content: center;
             align-items: center;
             font-family: 'Inter', sans-serif;
-            color: var(--text-primary);
-            padding: 20px;
-            overflow: hidden; /* Esconde os corações que saem da tela */
+            overflow: hidden;
             position: relative;
         }
 
-        /* Container dos corações */
-        .hearts-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .heart {
-            position: absolute;
-            color: var(--heart-color);
-            opacity: 0.6;
-            animation: floatUp ease-in-out infinite;
-        }
-
-        @keyframes floatUp {
-            0% { transform: translateY(100vh) scale(0.8) rotate(0deg); opacity: 0; }
-            20% { opacity: 0.6; }
-            80% { opacity: 0.6; }
-            100% { transform: translateY(-20vh) scale(1.2) rotate(45deg); opacity: 0; }
-        }
-
-        /* Container do Texto */
-        .container {
-            background: rgba(255, 255, 255, 0.6); /* Fundo semi-transparente elegante */
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            max-width: 550px;
-            width: 100%;
-            padding: 50px 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(180, 130, 140, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            position: relative;
+        /* =========================================
+           CENA 1: O ENVELOPE
+        ========================================= */
+        #cena-envelope {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease;
             z-index: 10;
+        }
+
+        .envelope-wrapper {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            cursor: pointer;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Parte de trás e fundo do envelope */
+        .env-back {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: var(--env-dark);
+            border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(180, 130, 140, 0.3);
+        }
+
+        /* Aba superior (que abre) */
+        .env-flap {
+            position: absolute;
+            top: 0; left: 0;
+            width: 0; height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-top: 110px solid var(--env-flap);
+            transform-origin: top;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 4;
+        }
+
+        /* Frente do envelope */
+        .env-front {
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 0; height: 0;
+            border-left: 150px solid var(--env-front);
+            border-right: 150px solid var(--env-front);
+            border-bottom: 100px solid #f7c3cc;
+            z-index: 3;
+            border-radius: 0 0 8px 8px;
+        }
+
+        /* Selo de coração no envelope */
+        .env-seal {
+            position: absolute;
+            top: 95px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.8rem;
+            color: #d81b60;
+            z-index: 5;
+            transition: opacity 0.3s;
+        }
+
+        .instrucao {
+            margin-top: 40px;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+            opacity: 0.8;
+            letter-spacing: 1px;
+        }
+
+        /* Classes ativadas via JavaScript */
+        .envelope-wrapper.aberto .env-flap {
+            transform: rotateX(180deg);
+            z-index: 1; /* Cai para trás da carta */
+        }
+        .envelope-wrapper.aberto .env-seal {
+            opacity: 0; /* O selo some quando abre */
+        }
+        .envelope-wrapper.aberto {
+            animation: none; /* Para de flutuar */
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* =========================================
+           ANIMAÇÃO DOS CORAÇÕES EXPLODINDO
+        ========================================= */
+        .burst-heart {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            color: #f48fb1;
+            pointer-events: none;
+            z-index: 20;
+            animation: burst 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes burst {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            80% { opacity: 0.8; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(var(--s)) rotate(var(--r)); opacity: 0; }
+        }
+
+        /* =========================================
+           CENA 2: A CARTA DE LEITURA
+        ========================================= */
+        #cena-carta {
+            display: none; /* Escondido inicialmente */
+            width: 100%;
+            padding: 20px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease, transform 1s ease;
+            z-index: 30;
+        }
+
+        #cena-carta.visivel {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .carta-container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 40px 30px;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(180, 130, 140, 0.15);
+            border: 1px solid rgba(255, 255, 255, 1);
         }
 
         h1 {
             font-family: 'Playfair Display', serif;
             font-weight: 400;
-            font-size: 2.2rem;
+            font-size: 2rem;
             margin-bottom: 25px;
             color: var(--text-secondary);
-            opacity: 0;
-            animation: fade 2s ease forwards 0.5s;
         }
 
         p {
             font-weight: 300;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             line-height: 1.8;
             margin-bottom: 20px;
-            opacity: 0;
-            animation: fade 2s ease forwards;
+            color: var(--text-primary);
         }
 
-        /* Efeito de surgimento gradual da leitura */
-        p:nth-of-type(1) { animation-delay: 2s; }
-        p:nth-of-type(2) { animation-delay: 3.5s; }
-        p:nth-of-type(3) { animation-delay: 5s; }
-
-        .signature {
-            margin-top: 40px;
+        .assinatura {
+            margin-top: 35px;
             font-family: 'Playfair Display', serif;
             font-style: italic;
             font-size: 1.25rem;
             color: var(--text-secondary);
             text-align: right;
-            opacity: 0;
-            animation: fade 2s ease forwards 6.5s;
-        }
-
-        @keyframes fade {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 480px) {
-            .container { padding: 35px 25px; }
-            h1 { font-size: 1.8rem; }
-            p { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Corações ao fundo -->
-    <div class="hearts-bg" id="hearts-container"></div>
+    <!-- PRIMEIRA TELA: ENVELOPE -->
+    <div id="cena-envelope">
+        <div class="envelope-wrapper" onclick="abrirCarta()">
+            <div class="env-back"></div>
+            <div class="env-flap"></div>
+            <div class="env-front"></div>
+            <div class="env-seal">❤</div>
+        </div>
+        <div class="instrucao">Toque para abrir</div>
+    </div>
 
-    <div class="container">
-        <h1>Oi, Camila.</h1>
-        
-        <p>Parei por um momento hoje e me peguei pensando na sorte que tenho por ter a sua companhia.</p>
-        
-        <p>No meio da correria dos dias, nossas conversas e o seu sorriso se tornaram o meu refúgio favorito. Não tem nenhum motivo especial para essa mensagem, além da vontade de te fazer sorrir antes de dormir e te lembrar do quanto você me faz bem.</p>
-        
-        <p>Espero que o seu dia tenha sido tão bom quanto a sensação que é estar perto de você. Descansa bem.</p>
-        
-        <div class="signature">Com carinho,<br>Kaio</div>
+    <!-- SEGUNDA TELA: A MENSAGEM (O mesmo texto maduro e elegante) -->
+    <div id="cena-carta">
+        <div class="carta-container">
+            <h1>Oi, Camila.</h1>
+            
+            <p>Parei por um momento hoje e me peguei pensando na sorte que tenho por ter a sua companhia.</p>
+            
+            <p>No meio da correria dos dias, nossas conversas e o seu sorriso se tornaram o meu refúgio favorito. Não tem nenhum motivo especial para essa mensagem, além da vontade de te fazer sorrir antes de dormir e te lembrar do quanto você me faz bem.</p>
+            
+            <p>Espero que o seu dia tenha sido tão bom quanto a sensação que é estar perto de você. Descansa bem.</p>
+            
+            <div class="assinatura">Com carinho,<br>Kaio</div>
+        </div>
     </div>
 
     <script>
-        // Script para gerar corações suaves subindo
-        const heartsContainer = document.getElementById('hearts-container');
-        const numHearts = 15; // Quantidade de corações na tela
+        function abrirCarta() {
+            const envelope = document.querySelector('.envelope-wrapper');
+            const cenaEnvelope = document.getElementById('cena-envelope');
+            const cenaCarta = document.getElementById('cena-carta');
+            
+            // 1. Abre a aba do envelope
+            envelope.classList.add('aberto');
 
-        for (let i = 0; i < numHearts; i++) {
-            let heart = document.createElement('div');
-            heart.innerHTML = '❤';
-            heart.className = 'heart';
-            
-            // Posição horizontal aleatória
-            heart.style.left = Math.random() * 100 + 'vw';
-            
-            // Tamanhos variados para dar profundidade
-            let size = Math.random() * 1.5 + 0.8; 
-            heart.style.fontSize = size + 'rem';
-            
-            // Velocidade e atraso aleatórios
-            let duration = Math.random() * 5 + 8; // Entre 8s e 13s (bem suave)
-            let delay = Math.random() * 5;
-            
-            heart.style.animationDuration = duration + 's';
-            heart.style.animationDelay = delay + 's';
+            // 2. Dispara a explosão de corações
+            criarCoracoes();
 
-            heartsContainer.appendChild(heart);
+            // 3. Após um tempo, esconde o envelope e mostra a carta
+            setTimeout(() => {
+                cenaEnvelope.style.opacity = '0';
+                
+                setTimeout(() => {
+                    cenaEnvelope.style.display = 'none';
+                    cenaCarta.style.display = 'block';
+                    
+                    // Pequeno atraso para a transição do CSS funcionar no display: block
+                    setTimeout(() => {
+                        cenaCarta.classList.add('visivel');
+                    }, 50);
+
+                }, 800); // Tempo para o envelope sumir da tela
+            }, 1200); // Tempo que ela fica olhando os corações explodirem
+        }
+
+        function criarCoracoes() {
+            const quantidade = 40; // Quantidade de corações na explosão
+            
+            for (let i = 0; i < quantidade; i++) {
+                let coracao = document.createElement('div');
+                coracao.innerHTML = '❤';
+                coracao.className = 'burst-heart';
+                
+                // Cálculos matemáticos para espalhar os corações em 360 graus
+                let angulo = Math.random() * Math.PI * 2;
+                // Distância que o coração vai voar (entre 80px e 350px para preencher a tela do celular)
+                let distancia = Math.random() * 270 + 80; 
+                
+                let tx = Math.cos(angulo) * distancia + 'px';
+                let ty = Math.sin(angulo) * distancia + 'px';
+                
+                // Tamanhos e rotações variadas para ficar natural
+                let scale = Math.random() * 1.5 + 0.5;
+                let rotate = (Math.random() * 360) + 'deg';
+                
+                coracao.style.setProperty('--tx', tx);
+                coracao.style.setProperty('--ty', ty);
+                coracao.style.setProperty('--s', scale);
+                coracao.style.setProperty('--r', rotate);
+                
+                // Cores variadas em tons de rosa
+                const cores = ['#f48fb1', '#ff4081', '#f8bbd0', '#c2185b'];
+                coracao.style.color = cores[Math.floor(Math.random() * cores.length)];
+                
+                document.body.appendChild(coracao);
+                
+                // Remove os corações do HTML depois que a animação acaba para não pesar o celular
+                setTimeout(() => coracao.remove(), 1500);
+            }
         }
     </script>
 </body>
